@@ -1,9 +1,8 @@
-# \[Group name\]
+# Mikkel & Thomas
 
 **Group members:**
-- A
-- B
-- C
+- Mikkel Lyngholm
+- Thomas Jensen
 
 This repository contains  
 1. Inaugural project. 
