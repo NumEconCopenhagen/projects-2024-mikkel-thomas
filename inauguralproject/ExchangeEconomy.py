@@ -61,11 +61,14 @@ class ExchangeEconomyClass:
     def pareto_improve(self, x1A, x2A):
         '''
         This function checks if the allocation is pareto improving and then adds the allocation to a list of pareto improvements
+        Input: x1A and x2A being the consumption of good 1 and 2 for agent A
+        Output: List of pareto improvements
         '''
         pareto_improvements = []
-        init_utilityA = self.utility_A(self.par.w1A, 1 - self.par.w2B)
-        init_utilityB = self.utility_B(1 - self.par.w1A, self.par.w2B)
-        for i, c in enumerate(0,x1A):
-            for j, d in enumerate(0,x2A):
+        init_utilityA = self.utility_A(self.par.w1A, self.par.w2A)
+        init_utilityB = self.utility_B(1 - self.par.w1A, 1 - self.par.w2A)
+        for i, c in enumerate(x1A):
+            for j, d in enumerate(x2A):
                 if self.utility_A(c,d) > init_utilityA and self.utility_B(1-c,1-d) > init_utilityB:
                     pareto_improvements.append((c,d))
+        return pareto_improvements
