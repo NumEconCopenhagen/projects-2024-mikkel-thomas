@@ -44,7 +44,8 @@ class ExchangeEconomyClass:
         Input: p1 being the price of good 1 and the price of good 2 is used as numeraire
         Output: x1A and x2A being the optimal consumption of good 1 and 2 for agent B given prices p1 and p2 = 1
         '''
-        return self.par.beta*(p1*self.par.w1B+self.par.w2B)/p1, (1 - self.par.beta)*(p1*self.par.w1B+self.par.w2B)
+        par = self.par
+        return self.par.beta*(p1*(1 - par.w1A)+(1 - par.w2A))/p1, (1 - self.par.beta)*(p1*(1 - par.w1A)+ 1 - par.w2A)
     
     def check_market_clearing(self,p1):
 
@@ -64,9 +65,11 @@ class ExchangeEconomyClass:
         Input: x1A and x2A being the consumption of good 1 and 2 for agent A
         Output: List of pareto improvements
         '''
+
+        par = self.par
         pareto_improvements = []
-        init_utilityA = self.utility_A(self.par.w1A, self.par.w2A)
-        init_utilityB = self.utility_B(1 - self.par.w1A, 1 - self.par.w2A)
+        init_utilityA = self.utility_A(par.w1A, par.w2A)
+        init_utilityB = self.utility_B(1 - par.w1A, 1 - par.w2A)
         for i, c in enumerate(x1A):
             for j, d in enumerate(x2A):
                 if self.utility_A(c,d) > init_utilityA and self.utility_B(1-c,1-d) > init_utilityB:
