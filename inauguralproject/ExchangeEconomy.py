@@ -45,7 +45,9 @@ class ExchangeEconomyClass:
         Output: x1A and x2A being the optimal consumption of good 1 and 2 for agent B given prices p1 and p2 = 1
         '''
         par = self.par
-        return self.par.beta*(p1*(1 - par.w1A)+(1 - par.w2A))/p1, (1 - self.par.beta)*(p1*(1 - par.w1A)+ 1 - par.w2A)
+        x1B = par.beta*(p1*(1 - par.w1A)+(1 - par.w2A))/p1
+        x2B = (1 - par.beta)*(p1*(1 - par.w1A)+ 1 - par.w2A) 
+        return x1B, x2B
     
     def check_market_clearing(self,p1):
 
