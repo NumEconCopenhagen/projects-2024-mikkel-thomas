@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 from scipy import optimize
+import numpy as np
 
 class ExchangeEconomyClass:
 
@@ -137,9 +138,12 @@ class ExchangeEconomyClass:
         # utilityA = self.utility_A(x1Aopt,x2Aopt)
         return x1Aopt, x2Aopt
     
-    def solve_market_equilibrium(self, w1A, w2A):
-        x1A,x2A = self.demand_A(p1)0
-        x1B,x2B = self.demand_B(p1)
-        obj = lambda p1: x1A-w1A + x1B-(1-w2A) # here the input is a scalar
-        res = optimize.root_scalar(obj,bracket=(1e-8,10),method='bisect')
-        x = res.root
+    def solve_market_equilibrium(self, w1A):
+        p1_eq = np.zeros(len(w1A)) # empty array to store equilibrium prices
+        for i in range(len(w1A)):
+            obj = lambda p1: self.demand_A(p1)[0]-w1A[i] + self.demand_B(p1)[0]-(1-w1A[i])
+            res = optimize.root_scalar(obj,bracket=(1e-8,10),method='bisect')
+            p1_eq[i] = res.root
+        x1A_eq, x2A_eq = self.demand_A(p1_eq)
+        X1B_eq, X2B_eq = self.demand_B(p1_eq)
+        return x1A_eq, x2A_eq, X1B_eq, X2B_eq
