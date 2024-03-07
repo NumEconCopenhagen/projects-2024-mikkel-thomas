@@ -107,3 +107,39 @@ class ExchangeEconomyClass:
         p1opt = result.x[0]
         utilityA_opt = self.utility_A(self.demand_A(p1opt)[0],self.demand_A(p1opt)[1])
         return p1opt, utilityA_opt
+    
+    def solve_social_planner(self):
+        '''
+        Solves the social planner problem by maximizing the sum of utilities of agent A and B.
+
+        Returns:
+        - p1opt (float): Optimal price of good 1 for agent A.
+        - utilityA_opt (float): Optimal utility of agent A.
+        '''
+
+        # par = self.par
+        # sol = model.sol    
+        
+        # a. objective function (to minimize) 
+        obj = lambda xA: -(self.utility_A(xA[0],xA[1]) + self.utility_B(1 - xA[0],1 - xA[1])) # minimize -> negative of utility
+            
+        # b. constraints and bounds
+        # budget_constraint = lambda x: par.m-par.p1*x[0]-par.p2*x[1] # violated if negative
+        # constraints = ({'type':'ineq','fun':budget_constraint})
+        bounds = ((1e-8,1),(1e-8,1))
+                
+        # c. call solver
+        x0 = [0.5,0.5]
+        result = optimize.minimize(obj,x0,method='SLSQP',bounds=bounds)
+            
+        # d. save
+        x1Aopt, x2Aopt = result.x
+        # utilityA = self.utility_A(x1Aopt,x2Aopt)
+        return x1Aopt, x2Aopt
+    
+    def solve_market_equilibrium(self, w1A, w2A):
+        x1A,x2A = self.demand_A(p1)0
+        x1B,x2B = self.demand_B(p1)
+        obj = lambda p1: x1A-w1A + x1B-(1-w2A) # here the input is a scalar
+        res = optimize.root_scalar(obj,bracket=(1e-8,10),method='bisect')
+        x = res.root
