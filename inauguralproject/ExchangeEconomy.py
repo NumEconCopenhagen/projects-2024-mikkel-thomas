@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from scipy import optimize
 
 class ExchangeEconomyClass:
 
@@ -77,3 +78,34 @@ class ExchangeEconomyClass:
                 if self.utility_A(c,d) > init_utilityA and self.utility_B(1-c,1-d) > init_utilityB:
                     pareto_improvements.append((c,d))
         return pareto_improvements
+    
+    def solve_A(self):
+        '''
+        Solves the market maker problem for agent A.
+
+        Returns:
+        - p1opt (float): Optimal price of good 1 for agent A.
+        - utilityA_opt (float): Optimal utility of agent A.
+        '''
+
+        # par = self.par
+        # sol = model.sol    
+        
+        # a. objective function (to minimize) 
+        obj = lambda p1: -self.utility_A(1 - self.demand_B(p1)[0],1 - self.demand_B(p1)[1]) # minimize -> negative of utility
+            
+        # b. constraints and bounds
+        # budget_constraint = lambda x: par.m-par.p1*x[0]-par.p2*x[1] # violated if negative
+        # constraints = ({'type':'ineq','fun':budget_constraint})
+        bounds = ((1e-8,None),)
+        
+        # why all these 1e-8? To avoid ever having x1 = 0 or x2 = 0
+        
+        # c. call solver
+        p10 = 1.5
+        result = optimize.minimize(obj,p10,method='SLSQP',bounds=bounds)
+            
+        # d. save
+        p1opt = result.x[0]
+        utilityA_opt = self.utility_A(self.demand_A(p1opt)[0],self.demand_A(p1opt)[1])
+        return p1opt, utilityA_opt
