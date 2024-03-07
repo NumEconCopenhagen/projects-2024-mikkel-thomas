@@ -98,9 +98,7 @@ class ExchangeEconomyClass:
         # budget_constraint = lambda x: par.m-par.p1*x[0]-par.p2*x[1] # violated if negative
         # constraints = ({'type':'ineq','fun':budget_constraint})
         bounds = ((1e-8,None),)
-        
-        # why all these 1e-8? To avoid ever having x1 = 0 or x2 = 0
-        
+                
         # c. call solver
         p10 = 1.5
         result = optimize.minimize(obj,p10,method='SLSQP',bounds=bounds)
