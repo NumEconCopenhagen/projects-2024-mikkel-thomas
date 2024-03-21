@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 from scipy import optimize
 import numpy as np
+from scipy import optimize
 
 class ExchangeEconomyClass:
 
@@ -80,7 +81,7 @@ class ExchangeEconomyClass:
                     pareto_improvements.append((c,d))
         return pareto_improvements
     
-    def solve_A(self):
+    def solve_A_cont(self):
         '''
         Solves the market maker problem for agent A.
 
@@ -96,8 +97,6 @@ class ExchangeEconomyClass:
         obj = lambda p1: -self.utility_A(1 - self.demand_B(p1)[0],1 - self.demand_B(p1)[1]) # minimize -> negative of utility
             
         # b. constraints and bounds
-        # budget_constraint = lambda x: par.m-par.p1*x[0]-par.p2*x[1] # violated if negative
-        # constraints = ({'type':'ineq','fun':budget_constraint})
         bounds = ((1e-8,None),)
                 
         # c. call solver
@@ -107,8 +106,60 @@ class ExchangeEconomyClass:
         # d. save
         p1opt = result.x[0]
         utilityA_opt = self.utility_A(self.demand_A(p1opt)[0],self.demand_A(p1opt)[1])
-        return p1opt, utilityA_opt
+        print(f'Optimal price for agent A is {p1opt:.4f} with utility {utilityA_opt:.4f}')
+        print(f'The consumption for A is: x1A = {1 - self.demand_B(p1opt)[0]:.4f}, x2A = {1 - self.demand_A(p1opt)[1]:.4f}')
+        print(f'The consumption for B is: x1B = {self.demand_B(p1opt)[0]:.4f}, x2B = {self.demand_B(p1opt)[1]:.4f}')
     
+    def solve_A_disc(self, p1):
+        x1B, x2B = self.demand_B(p1)
+
+        # Applying a boolean mask to ensure that the values of x1B and x2B are within the unit interval
+        x1B[x1B > 1] = np.nan
+        x2B[x2B > 1] = np.nan
+
+        # Calculate the utility for agent A given agent B's demand
+        utilityA = self.utility_A(1 - x1B,1 - x2B)
+
+        # Finding the maximum utility and the corresponding index (Using nanmax and nanargmax to handle NaN values)
+        utilityA_max = np.nanmax(utilityA)
+        index = np.nanargmax(utilityA)
+
+        # Finding the optimal price for agent A to choose
+        p1_opt_A = p1[index]
+        print(f'Optimal price on discrete grid for agent A is {p1_opt_A:.8f} with utility {utilityA_max:.8f}')
+        print(f'The consumption for A is: x1A  = {1-x1B[index]:.8f}, x2A = {1-x2B[index]:.8f}')
+        print(f'The consumption for B is: x1B  = {x1B[index]:.8f}, x2B = {x2B[index]:.8f}')
+
+    def solve_A_pareto(self):
+        '''
+        Solves the market maker problem for A by maximizing utility subject to a pareto improvement constraint for B.
+
+        Returns:
+        - p1opt (float): Optimal price of good 1 for agent A.
+        - utilityA_opt (float): Optimal utility of agent A.
+        '''
+        par = self.par
+
+        # a. objective function (to minimize) 
+        obj = lambda xA: -self.utility_A(xA[0],xA[1]) # minimize -> negative of utility
+            
+        # b. constraints and bounds
+        budget_constraint = lambda xA: self.utility_B(1 - xA[0],1 - xA[1]) - self.utility_B(1 - par.w1A, 1 - par.w2A) # violated if negative
+        constraints = ({'type':'ineq','fun':budget_constraint})
+        bounds = ((1e-8,1),(1e-8,1))
+                
+        # c. call solver
+        x0 = [0.2,0.8]
+        result = optimize.minimize(obj,x0,method='SLSQP',constraints=constraints, bounds=bounds)
+            
+        # d. save
+        x1Aopt, x2Aopt = result.x
+        
+        print(f'The consumption for A is: x1A  = {x1Aopt:.4f}, x2A = {x2Aopt:.4f}')
+        print(f'The consumption for B is: x1B  = {1 - x1Aopt:.4f}, x2B = {1 - x2Aopt:.4f}')
+
+        return x1Aopt, x2Aopt
+
     def solve_social_planner(self):
         '''
         Solves the social planner problem by maximizing the sum of utilities of agent A and B.
@@ -130,7 +181,8 @@ class ExchangeEconomyClass:
         bounds = ((1e-8,1),(1e-8,1))
                 
         # c. call solver
-        x0 = [0.5,0.5]
+        x0 = [0.2,0.6]
+        print(x0)
         result = optimize.minimize(obj,x0,method='SLSQP',bounds=bounds)
             
         # d. save
@@ -147,3 +199,13 @@ class ExchangeEconomyClass:
         x1A_eq, x2A_eq = self.demand_A(p1_eq)
         X1B_eq, X2B_eq = self.demand_B(p1_eq)
         return x1A_eq, x2A_eq, X1B_eq, X2B_eq
+
+    def solve(self):
+        '''
+        Solves for the market equilibrium price and prints the error in equilibrium.
+        '''
+        obj = lambda p1: self.check_market_clearing(p1)[0] # here the input is a scalar
+        res = optimize.root_scalar(obj,bracket=(1e-8,10),method='bisect')
+        x = res.root
+        error_equilibrium = self.check_market_clearing(res.root)
+        print(f'Error in equilibrium {error_equilibrium} with equilbrium price p_1 = {x:.6f}')
