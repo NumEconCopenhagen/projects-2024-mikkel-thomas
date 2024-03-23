@@ -23,7 +23,7 @@ class ExchangeEconomyClass:
         Input: x1A and x2A being the consumption of good 1 and 2 for agent A
         Output: Utility of agent A
         '''
-        return x1A**self.par.alpha * x2A**(1 - self.par.beta)
+        return x1A**self.par.alpha * x2A**(1 - self.par.alpha)
 
     def utility_B(self,x1B,x2B):
         '''
@@ -31,7 +31,7 @@ class ExchangeEconomyClass:
         Input: x1B and x2B being the consumption of good 1 and 2 for agent B
         Output: Utility of agent B
         '''
-        return x1B**self.par.alpha * x2B**(1 - self.par.beta)
+        return x1B**self.par.beta * x2B**(1 - self.par.beta)
 
     def demand_A(self,p1):
         '''
@@ -100,15 +100,15 @@ class ExchangeEconomyClass:
         bounds = ((1e-8,None),)
                 
         # c. call solver
-        p10 = 1.5
+        p10 = 1.6
         result = optimize.minimize(obj,p10,method='SLSQP',bounds=bounds)
             
         # d. save
         p1opt = result.x[0]
-        utilityA_opt = self.utility_A(self.demand_A(p1opt)[0],self.demand_A(p1opt)[1])
-        print(f'Optimal price for agent A is {p1opt:.4f} with utility {utilityA_opt:.4f}')
-        print(f'The consumption for A is: x1A = {1 - self.demand_B(p1opt)[0]:.4f}, x2A = {1 - self.demand_A(p1opt)[1]:.4f}')
-        print(f'The consumption for B is: x1B = {self.demand_B(p1opt)[0]:.4f}, x2B = {self.demand_B(p1opt)[1]:.4f}')
+        utilityA_opt = self.utility_A(1 - self.demand_B(p1opt)[0],1 - self.demand_B(p1opt)[1])
+        print(f'Optimal price for agent A is: {p1opt:.4f}')
+        print(f'The consumption for A is: x1A = {1 - self.demand_B(p1opt)[0]:.4f}, x2A = {1 - self.demand_B(p1opt)[1]:.4f} with utility u(x1A,x2A) = {utilityA_opt:.4f}')
+        print(f'The consumption for B is: x1B = {self.demand_B(p1opt)[0]:.4f}, x2B = {self.demand_B(p1opt)[1]:.4f} with utility u(x1B,x2B) = {self.utility_B(self.demand_B(p1opt)[0],self.demand_B(p1opt)[1]):.4f}')
     
     def solve_A_disc(self, p1):
         x1B, x2B = self.demand_B(p1)
@@ -126,9 +126,10 @@ class ExchangeEconomyClass:
 
         # Finding the optimal price for agent A to choose
         p1_opt_A = p1[index]
-        print(f'Optimal price on discrete grid for agent A is {p1_opt_A:.8f} with utility {utilityA_max:.8f}')
-        print(f'The consumption for A is: x1A  = {1-x1B[index]:.8f}, x2A = {1-x2B[index]:.8f}')
-        print(f'The consumption for B is: x1B  = {x1B[index]:.8f}, x2B = {x2B[index]:.8f}')
+        print(f'Optimal price on discrete grid for agent A: {p1_opt_A:.4f}')
+        print(f'The consumption for A is: x1A  = {1-x1B[index]:.4f}, x2A = {1-x2B[index]:.4f} with utility u(x1A,x2A) =  {utilityA_max:.4f}')
+        print(f'The consumption for B is: x1B  = {x1B[index]:.4f}, x2B = {x2B[index]:.4f} with utility u(x1B,x2B) = {self.utility_B(x1B[index],x2B[index]):.4f}')
+
 
     def solve_A_pareto(self):
         '''
@@ -181,7 +182,7 @@ class ExchangeEconomyClass:
         bounds = ((1e-8,1),(1e-8,1))
                 
         # c. call solver
-        x0 = [0.2,0.6]
+        x0 = [0.75,0.8]
         print(x0)
         result = optimize.minimize(obj,x0,method='SLSQP',bounds=bounds)
             
