@@ -8,6 +8,7 @@ class ExchangeEconomyClass:
     def __init__(self):
 
         par = self.par = SimpleNamespace()
+        sol = self.sol = SimpleNamespace()
 
         # a. preferences
         par.alpha = 1/3
@@ -91,7 +92,7 @@ class ExchangeEconomyClass:
         '''
 
         # par = self.par
-        # sol = model.sol    
+        sol = self.sol    
         
         # a. objective function (to minimize) 
         obj = lambda p1: -self.utility_A(1 - self.demand_B(p1)[0],1 - self.demand_B(p1)[1]) # minimize -> negative of utility
@@ -110,7 +111,13 @@ class ExchangeEconomyClass:
         print(f'The consumption for A is: x1A = {1 - self.demand_B(p1opt)[0]:.4f}, x2A = {1 - self.demand_B(p1opt)[1]:.4f} with utility u(x1A,x2A) = {utilityA_opt:.4f}')
         print(f'The consumption for B is: x1B = {self.demand_B(p1opt)[0]:.4f}, x2B = {self.demand_B(p1opt)[1]:.4f} with utility u(x1B,x2B) = {self.utility_B(self.demand_B(p1opt)[0],self.demand_B(p1opt)[1]):.4f}')
     
+        # Return the results to a sol dict
+        sol.x1A_opt_cont = 1 - self.demand_B(p1opt)[0]
+        sol.x2A_opt_cont = 1 - self.demand_B(p1opt)[1]
+
     def solve_A_disc(self, p1):
+
+        sol = self.sol
         x1B, x2B = self.demand_B(p1)
 
         # Applying a boolean mask to ensure that the values of x1B and x2B are within the unit interval
@@ -130,6 +137,8 @@ class ExchangeEconomyClass:
         print(f'The consumption for A is: x1A  = {1-x1B[index]:.4f}, x2A = {1-x2B[index]:.4f} with utility u(x1A,x2A) =  {utilityA_max:.4f}')
         print(f'The consumption for B is: x1B  = {x1B[index]:.4f}, x2B = {x2B[index]:.4f} with utility u(x1B,x2B) = {self.utility_B(x1B[index],x2B[index]):.4f}')
 
+        sol.x1A_opt_disc = 1-x1B[index]
+        sol.x2A_opt_disc = 1-x2B[index]
 
     def solve_A_pareto(self):
         '''
