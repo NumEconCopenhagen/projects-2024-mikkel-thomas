@@ -1,4 +1,12 @@
 import pandas as pd
+import datetime
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import pycountry_convert as pc
+from pandas.api.types import CategoricalDtype
+from joypy import joyplot
+from matplotlib import cm
 
 def keep_regs(df, regs):
     """ Example function. Keep only the subset regs of regions in data.
@@ -54,6 +62,7 @@ class gpr_clean():
     def stadardize_gpr_apply(self):
         gpr_long = self.standardize_gpr(self.gpr_long, 'Country_name', 'GPRH')
         
+        gpr_long['Date'] = gpr_long['Date'].dt.date
         return gpr_long
 
     def __call__(self):
@@ -231,3 +240,182 @@ class merge_data():
     def __call__(self):
         # Return the cleaned DataFrame when the instance is called like a function
         return self.merged_df
+    
+
+def heatmap_gpr(df_gpr):
+    df_heatmap = df_gpr.pivot_table(index='Country_name', columns='Date', values='GPRH')
+
+    # Selecting data from 1990 to the present
+    df_heatmap = df_heatmap.loc[:, datetime.date(1990, 1, 1):]
+
+    # Flatten the data
+    data_flat = df_heatmap.values.flatten()
+
+    # Calculate the 2st and 98th percentiles
+    vmin = np.percentile(data_flat, 2)
+    vmax = np.percentile(data_flat, 98)
+
+    plt.figure(figsize=(14, 10))
+    heatmap = sns.heatmap(df_heatmap, cmap='coolwarm', vmin=vmin, vmax=vmax)
+
+    cbar = heatmap.collections[0].colorbar
+    cbar.set_label('Geopolitical Risk Index (GPRH)', fontsize=16)
+
+    # New code to modify x-tick labels
+    ax = plt.gca()
+    labels = ax.get_xticklabels()
+    plt.setp(labels, rotation=45, horizontalalignment='right')
+
+    # Get current x-tick locations and labels
+    locs, labels = plt.xticks()
+
+    # Set x-tick locations and labels
+    new_locs = locs[::4]  # Select every 5th location
+    new_labels = [labels[i].get_text()[:4] for i in range(len(labels)) if i % 4 == 0]  # Select every 5th label
+
+    plt.xticks(new_locs, new_labels)
+
+    ax.set_ylabel('Country', fontsize=16)
+    ax.set_xlabel('Date', fontsize=16)
+    ax.set_title('Geopolitical risk has increased in recent years...', fontsize=16)
+
+    plt.show()
+
+def lineplot_idealpoints(df_idealpoint):
+
+    pivot_df = df_idealpoint.pivot_table(index='Date', columns='Country_name', values='IdealPointAll')
+    pivot_df.columns.name = None
+    pivot_df = pivot_df.resample('A').mean()
+    # Plot the underlying 'IdealPointAll' lines in grey
+    plt.figure(figsize=(12,8))
+    for column in pivot_df.columns:
+        if column not in ['ideal_left', 'ideal_right']:
+            plt.plot(pivot_df.index, pivot_df[column], color='grey', alpha=0.2)
+
+    # Plot the 'ideal_left' and 'ideal_right' lines in different colors
+    # plt.plot(pivot_df.index, pivot_df['United States'], label='United States')
+    # plt.plot(pivot_df.index, pivot_df['China'], label='China')
+    plt.plot(pivot_df.index, pivot_df['ideal_left'], color='blue', label='Average Ideal Point (left-leaning)')
+    plt.plot(pivot_df.index, pivot_df['ideal_right'], color='red', label='Average Ideal Point (right-leaning)')
+
+    # Setting range of x-axis
+    plt.xlim([datetime.date(1946, 12, 31), datetime.date(2021, 12, 31)])
+
+    plt.grid(True, linestyle = '--', alpha = 0.5)
+    plt.xlabel('Year', fontsize = 16)
+    plt.ylabel('Ideal Point', fontsize = 16)
+    plt.title('The post Cold War convergence in geopoltical alignment has stalled...', fontsize = 16)
+    plt.legend()
+    plt.show()
+
+def scatter_mil_ideal(df_military_gdp_spend, df_population, df_idealpoint):
+    df_military_gdp_spend = df_military_gdp_spend[['2022']]
+    df_military_gdp_spend.reset_index(inplace=True)
+    df_military_gdp_spend = df_military_gdp_spend.rename(columns={'Country Code': 'iso3c', '2022': 'Military_GDP_Spend'})
+
+    df_population = df_population[['2022']]
+    df_population.reset_index(inplace=True)
+    df_population = df_population.rename(columns={'Country Code': 'iso3c', '2022': 'population_level'})
+
+    df_idealpoint = df_idealpoint[['iso3c', 'IdealPointAll', 'session']]
+
+    # Keep only idealpoint from session 76 (i.e. 2022)
+    df_idealpoint = df_idealpoint[df_idealpoint['session'] == 76]
+
+    merged_df = df_idealpoint.reset_index().merge(df_military_gdp_spend, left_on = 'iso3c', right_on = 'iso3c', how='inner')
+    merged_df = merged_df.reset_index().merge(df_population, left_on = 'iso3c', right_on = 'iso3c', how='inner')
+    merged_df.drop(columns=['index', 'session', 'level_0'], inplace=True)
+    merged_df.set_index('iso3c', inplace=True)
+    merged_df.dropna(inplace=True)
+
+    def iso3c_to_continent(iso3c):
+        try:
+            country_alpha2 = pc.country_alpha3_to_country_alpha2(iso3c)
+            country_continent_code = pc.country_alpha2_to_continent_code(country_alpha2)
+            country_continent_name = pc.convert_continent_code_to_continent_name(country_continent_code)
+            return country_continent_name
+        except KeyError:
+            return np.nan
+
+    def add_continent_to_df(df):
+        df['Continent'] = df.index.map(iso3c_to_continent)
+        return df
+
+    merged_df = add_continent_to_df(merged_df)
+
+    # Scatter plot of military spend vs idealpoint
+    plt.figure(figsize=(12, 8))
+    sns.scatterplot(data=merged_df, x='IdealPointAll', y='Military_GDP_Spend', size = 'population_level', sizes=(20, 2000), hue='Continent', palette='tab10', alpha=0.7)
+
+    # Add grid lines
+    plt.grid(True, linestyle = '--', alpha = 0.5)
+
+    # Add labels for specific points
+    high_pop_countries = merged_df[merged_df['population_level'] > 100*10**6]
+    high_pop_countries_index = high_pop_countries.index
+    for country in high_pop_countries_index:
+        country_data = merged_df.loc[country]
+        plt.text(x=country_data['IdealPointAll'], 
+                y=country_data['Military_GDP_Spend'], 
+                s=country, 
+                fontdict=dict(color='black',size=12),
+                bbox=dict(facecolor='yellow',alpha=0.))
+
+    plt.xlabel('Ideal point', fontsize=16)
+    plt.ylabel('Military spending, percent of GDP', fontsize=16)
+    plt.title('The left-leaning block vastly outweigh the right-leaning in terms of population...', fontsize=16)
+    plt.ylim(0, 9)
+
+    plt.show()
+
+def ridge_gpr(df_gpr):
+
+    def windsorize_series(s, lower_quantile=0.01, upper_quantile=0.99):
+        lower = s.quantile(lower_quantile)
+        upper = s.quantile(upper_quantile)
+        return s.clip(lower, upper)
+
+    # Create a list of decades from 1900 to 2090
+    decades = [str(i) for i in range(1900, 2025, 5)]
+
+    # Define the categorical data type
+    cat_decade = CategoricalDtype(decades)
+
+    df_gpr_ridge = df_gpr.copy()
+
+    # Calculate the mean of the 'GPRH' by date
+    df_gpr_ridge['GPRH'] = df_gpr_ridge.groupby('Date')['GPRH'].transform('mean')
+
+    # Drop duplicates by date
+    df_gpr_ridge = df_gpr_ridge.drop_duplicates(subset='Date')
+
+    df_gpr_ridge['GPRH_Windsorized'] = df_gpr_ridge.groupby('Country_name')['GPRH'].transform(windsorize_series)
+
+    # Convert the 'Date' column to datetime if it's not already
+    df_gpr_ridge['Date'] = pd.to_datetime(df_gpr_ridge['Date'])
+
+    # Extract the year from the 'Date' column
+    df_gpr_ridge['Year'] = df_gpr_ridge['Date'].dt.year
+
+    # Create a new column for the decade
+    df_gpr_ridge['Decade'] = (df_gpr_ridge['Year'] // 5) * 5
+    df_gpr_ridge['Decade'] = df_gpr_ridge['Decade'].astype(str).astype(cat_decade)
+
+    # Dropping all rows not equal to argentina or united states
+    df_gpr_ridge = df_gpr_ridge[df_gpr_ridge['Country_name'].isin(['Argentina', 'United States'])]
+    # df_gpr_ridge = df_gpr_ridge[df_gpr_ridge['Country_name'] == 'Argentina']
+    df_gpr_ridge = df_gpr_ridge.drop(columns=['Country_name', 'Date', 'Year', 'GPRH'])
+    df_gpr_ridge.head()
+
+    plt.figure()
+
+    joyplot(
+        data=df_gpr_ridge[['GPRH_Windsorized', 'Decade']], 
+        by='Decade',
+        alpha=0.85,
+        colormap=cm.coolwarm,
+        figsize=(12, 8)
+    )
+    plt.title('The 2020s could be a new above average decate of risk...', fontsize=16)
+    plt.xlabel('Average Geopolitical Risk Index, all countries', fontsize=16)
+    plt.show()
