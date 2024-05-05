@@ -1,0 +1,104 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{ amssymb }
+\usepackage{lastpage}
+\usepackage{subcaption}
+\usepackage[labelfont=sc]{caption}
+\usepackage[a4paper, total={6in, 9.5in}]{geometry}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Thomas Jensen}
+\chead{}
+\lhead{IntroProg}
+\rfoot{Page \thepage\ of \pageref{LastPage}}
+\lfoot{Spring 2024}
+\newcommand{\nnewline}{\newline \newline}
+
+% Matlab formatting
+\usepackage{listings}
+\usepackage[numbered,framed]{matlab-prettifier}
+\usepackage{xcolor}
+
+\renewcommand{\footrulewidth}{0.5pt}
+\begin{document}
+\section{Ramsey model with housing}
+\textbf{Household:} Households supply labor exogenously, $N_{t}=1$, and earns a wage $w_{t}$. The return on saving is $r_{t+1}$. Utility is derived from housing and consumption
+$$
+\begin{aligned}
+	U & =\max_{\{C_{t},H_{t}\}_{t=0}^{\infty}}\sum_{t=0}^{\infty}\beta^{t}\left(\frac{C_{t}^{1-\sigma}}{1-\sigma}+\frac{H_{t}^{1-\sigma}}{1-\sigma}\right),\beta\in(0,1),\sigma>0\\
+	& \text{s.t.}\\
+	A_{t}+C_t+q_tH_t& =(1+r_{t})A_{t-1}+w_{t}N_{t} +  \color{red}q_{t}H_{t-1} \color{black}{33}44
+\end{aligned}
+$$
+where $H_{t}$ is housing consumption and $q_{t}$ is housing prices in terms of consumption. 
+\\\\
+\textbf{Firms:} Firms rent capital $K_{t-1}$ at the rental rate $r_{t}^{K}$
+and hires labor $L_{t}$ at the wage rate $w_{t}$.<br>
+Firms have access to the production function
+$$
+\begin{aligned}
+	Y_{t} &= F(K_{t-1},L_{t}) \\ &=\Gamma_t(\alpha K_{t-1}^{-\theta}+(1-\alpha)L_{t}^{-\theta})^{\frac{1}{-\theta}},\,\,\,\theta>-1,\alpha\in(0,1),\Gamma_t>0
+\end{aligned}
+$$
+Profits are
+$$
+\begin{aligned}
+	\Pi_{t}=Y_{t}-w_{t}L_{t}-r_{t}^{K}K_{t-1}
+\end{aligned}
+$$
+\\\\
+\textbf{Equilibrium:}
+\begin{enumerate}
+	\item Households maximize utility
+	\item Firms maximize profits 
+	\item Labor market clear: $L_{t}=N_{t}=1$
+	\item Goods market clear: $Y_{t}=C_{t}+I_{t}$
+	\item Housing market clear: $\bar{H}=H_t$
+	\item Asset market clear: $A_{t}=K_{t}$ and $r_{t}=r_{t}^{k}-\delta$
+	\item Capital follows its law of motion: $K_{t}=(1-\delta)K_{t-1}+I_{t}$
+\end{enumerate}
+\textbf{Implication of profit maximization:} From FOCs
+$$
+\begin{aligned}
+	r_{t}^{k} & = F_{K}(K_{t-1},L_{t})=A_t \alpha K_{t-1}^{-\theta-1}Y_{t}^{-1}\\
+	w_{t} & = F_{L}(K_{t-1},L_{t})=A_t (1-\alpha)L_{t}^{-\theta-1}Y_{t}^{-1}
+\end{aligned}
+$$
+\\
+\textbf{Implication of utility maximization:} From FOC for consumption/saving:
+$$
+\begin{aligned}
+	C_{t}^{-\sigma}&=\beta(1+r_{t+1})C_{t+1}^{-\sigma} \\
+	&=\beta(1+F_{K}(K_{t},1)-\delta)C_{t+1}^{-\sigma}
+\end{aligned}
+$$
+For housing: 
+\begin{align*}
+	C_t^{-\sigma}q_t = H_t^{-\sigma} + \beta C_{t+1}^{-\sigma}q_{t+1}
+\end{align*}
+\\
+\textbf{Simpler capital accumulation equation:}
+$$
+\begin{aligned}
+	K_{t} &= (1-\delta)K_{t-1}+I_{t} \\
+	&= (1-\delta)K_{t-1}+Y_{t}-C_{t} \\
+	&= (1-\delta)K_{t-1} + F(K_{t-1},1)-C_{t}
+\end{aligned}
+$$ 
+\\
+\textbf{System to solve:}
+$$
+\begin{aligned}
+	\boldsymbol{H}(\boldsymbol{K},\boldsymbol{C},\boldsymbol{q},K_{-1})
+	=\left[\begin{array}{c}
+		C_{t}^{-\sigma}-\beta(1+F_{K}(K_{t},1))C_{t+1}^{-\sigma}\\
+		K_{t}-[(1-\delta)K_{t-1} + F(K_{t-1},1)-C_{t}] \\ 
+		\bar{H}^{-\sigma} + \beta C_{t+1}^{-\sigma}q_{t+1} - C_t^{-\sigma}q_t
+	\end{array}\right]
+\end{aligned}
+$$
+\end{document}
