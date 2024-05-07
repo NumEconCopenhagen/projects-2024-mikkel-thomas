@@ -81,14 +81,14 @@ class RamseyModelClass1():
         ss.K = K_ss
         ss.Y = Y_ss
 
-    if do_print:
-
-        print(f'Y_ss = {ss.Y:.4f}')
-        print(f'K_ss/Y_ss = {ss.K/ss.Y:.4f}')
-        print(f'rk_ss = {ss.rk:.4f}')
-        print(f'r_ss = {ss.r:.4f}')
-        print(f'w_ss = {ss.w:.4f}')
-        print(f'Gamma = {ss.Gamma:.4f}')
+        if do_print:
+            print(f'K_ss = {ss.K:.2f}')
+            print(f'Y_ss = {ss.Y:.2f}')
+            print(f'C_ss = {ss.C:.2f}')
+            print(f'Gamma = {ss.Gamma:.2f}')
+            print(f'r_ss = {ss.r:.2f}')
+            print(f'w_ss = {ss.w:.2f}')
+            print(f'rk_ss = {ss.rk:.2f}')
 
 
 def production(par,Gamma,K):
