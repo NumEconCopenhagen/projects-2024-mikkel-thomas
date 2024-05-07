@@ -81,10 +81,25 @@ class RamseyModelClass1():
         ss.K = K_ss
         ss.Y = Y_ss
 
-        if do_print: print(ss.__dict__)
+    if do_print:
 
-        return ss
+        print(f'Y_ss = {ss.Y:.4f}')
+        print(f'K_ss/Y_ss = {ss.K/ss.Y:.4f}')
+        print(f'rk_ss = {ss.rk:.4f}')
+        print(f'r_ss = {ss.r:.4f}')
+        print(f'w_ss = {ss.w:.4f}')
+        print(f'Gamma = {ss.Gamma:.4f}')
 
+
+def production(par,Gamma,K):
+    """ production function (ces)"""
+
+    if par.production_function == 'cobb-douglas':
+        Y = Gamma(*par.alpha*K**(-par.theta-1)+(1-par.alpha)(1.0)**(-par.theta-1))**(-1/par.theta)
+        rk = Gamma*par.alpha*K_lag**(-par.theta-1) * (Y/Gamma)**(1.0+par.theta)
+        w = Gamma*(1-par.alpha)*(1.0)**(-par.theta-1) * (Y/Gamma)**(1.0+par.theta)
+    
+    return Y,rk,w
 
 def solve_ss(alpha, c):
     """ Example function. Solve for steady state k. 
