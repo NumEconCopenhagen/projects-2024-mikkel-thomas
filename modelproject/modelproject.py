@@ -27,7 +27,9 @@ class RamseyModelClass1():
 
         # a. household
         par.sigma = 2.0
+        par.sigmah = 2.0 # IES of housing
         par.beta = np.nan
+        par.upsilon = 1.0
 
         # b. firms
         par.Gamma = np.nan
@@ -42,6 +44,9 @@ class RamseyModelClass1():
         # d. misc
         par.solver = 'scpiy'
         par.Tpath = 500
+
+        # e. housing
+        par.Hbar = 1.0
 
     def allocate(self):
         """ allocate arrays for transition path """
@@ -77,7 +82,10 @@ class RamseyModelClass1():
         # f. solve for rk_ss
         ss.rk = ss.r + par.delta
 
-        # g. store
+        # g. solve for H
+        ss.H = par.Hbar
+
+        # h. store
         ss.K = K_ss
         ss.Y = Y_ss
 
@@ -85,6 +93,7 @@ class RamseyModelClass1():
             print(f'K_ss = {ss.K:.2f}')
             print(f'Y_ss = {ss.Y:.2f}')
             print(f'C_ss = {ss.C:.2f}')
+            print(f'H_ss = {ss.H:.2f}')
             print(f'Gamma = {ss.Gamma:.2f}')
             print(f'r_ss = {ss.r:.2f}')
             print(f'w_ss = {ss.w:.2f}')
