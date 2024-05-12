@@ -32,6 +32,8 @@ class RamseyModelClass():
 
         # b. housing 
         par.Hbar = 1.0 # fixed housing supply
+        par.tauH = 0.05 # property tax
+        par.upsilon = 2.0 # housing utility weight
 
         # b. firms
         par.Gamma = np.nan
@@ -54,7 +56,7 @@ class RamseyModelClass():
         par = self.par
         path = self.path
 
-        allvarnames = ['Gamma','K','C','q','rk','w','r','Y','K_lag']
+        allvarnames = ['Gamma','K','C','q','tauH','rk','w','r','Y','K_lag']
         for varname in allvarnames:
             path.__dict__[varname] =  np.nan*np.ones(par.Tpath)
 
@@ -82,8 +84,9 @@ class RamseyModelClass():
         ss.C = ss.Y - par.delta*ss.K
 
         # g. solve for housing market 
+        ss.tauH = par.tauH
         ss.H = par.Hbar
-        ss.q = 1/(1 - par.beta) * (ss.H**(-par.sigmah)/ss.C**(-par.sigma))
+        ss.q = 1/(1 - par.beta) * ((par.upsilon*ss.H**(-par.sigmah) - ss.tauH*par.beta*ss.C**(-par.sigma))/ss.C**(-par.sigma))
 
         if do_print:
 
@@ -115,6 +118,9 @@ class RamseyModelClass():
         # c. housing
         q = path.q
         q_plus = np.append(path.q[1:],ss.q)
+
+        tauH = path.tauH
+        tauH_plus = np.append(path.tauH[1:],ss.tauH)
         
         # c. production and factor prices
         path.Y,path.rk,path.w = production(par,path.Gamma,K_lag)
@@ -125,7 +131,7 @@ class RamseyModelClass():
         errors = np.nan*np.ones((par.endovar,par.Tpath))
         errors[0,:] = C**(-par.sigma) - par.beta*(1+r_plus)*C_plus**(-par.sigma)
         errors[1,:] = K - ((1-par.delta)*K_lag + (path.Y - C))
-        errors[2,:] = par.Hbar**(-par.sigmah) + par.beta*C_plus**(-par.sigma)*q_plus - C**(-par.sigma)*q
+        errors[2,:] = par.upsilon*par.Hbar**(-par.sigmah) + par.beta*C_plus**(-par.sigma)*(q_plus - tauH_plus) - C**(-par.sigma)*q
         
         return errors.ravel()
         
