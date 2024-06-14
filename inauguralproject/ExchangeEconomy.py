@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from scipy import optimize
 import numpy as np
 from scipy import optimize
+import matplotlib.pyplot as plt
 
 class ExchangeEconomyClass:
 
@@ -192,7 +193,7 @@ class ExchangeEconomyClass:
                 
         # c. call solver
         x0 = [0.75,0.8]
-        print(x0)
+        # print(x0)
         result = optimize.minimize(obj,x0,method='SLSQP',bounds=bounds)
             
         # d. save
@@ -209,13 +210,109 @@ class ExchangeEconomyClass:
         x1A_eq, x2A_eq = self.demand_A(p1_eq)
         X1B_eq, X2B_eq = self.demand_B(p1_eq)
         return x1A_eq, x2A_eq, X1B_eq, X2B_eq
-
-    def solve(self):
+    
+    def random_endowments(self, n_rand, seed = 1):
         '''
-        Solves for the market equilibrium price and prints the error in equilibrium.
+        QUESTION 8: Function to generate random endowments for agent A and B and the solve for the market equilibrium
+        '''
+        np.random.seed(seed)
+        par = self.par
+        x1A_Q8, x2A_Q8 = np.zeros(n_rand), np.zeros(n_rand)
+        for n in range(n_rand):
+            rand_omega = np.random.uniform(0,1, size = 2)
+            par.w1A, par.w2A = rand_omega
+            eq_price = self.solve(do_print = False)
+            x1A_Q8[n], x2A_Q8[n] = self.demand_A(eq_price)
+
+        return x1A_Q8, x2A_Q8
+
+
+    def solve(self, do_print = True):
+        '''
+        QUESTION 3: Solves for the market equilibrium price and prints the error in equilibrium.
         '''
         obj = lambda p1: self.check_market_clearing(p1)[0] # here the input is a scalar
         res = optimize.root_scalar(obj,bracket=(1e-8,10),method='bisect')
         x = res.root
         error_equilibrium = self.check_market_clearing(res.root)
-        print(f'Error in equilibrium {error_equilibrium} with equilbrium price p_1 = {x:.6f}')
+        if do_print:
+            print(f'Error in equilibrium {error_equilibrium} with equilbrium price p_1 = {x:.6f}')
+        return x
+    
+    def plot_all_sol(self, x1A_Q3, x2A_Q3, x1A_c, x2A_c, x1A_Q5B, x2A_Q5B, x1A_sp, x2A_sp, w1bar, w2bar):
+        '''QUESTION 6B: Plotting the solutions for all the questions in the project so far'''
+        par = self.par
+        sol = self.sol
+        # a. figure set up
+        fig = plt.figure(frameon=True,figsize=(6,6), dpi=100)
+        ax_A = fig.add_subplot(1, 1, 1)
+
+        ax_A.set_xlabel("$x_1^A$")
+        ax_A.set_ylabel("$x_2^A$")
+
+        temp = ax_A.twinx()
+        temp.set_ylabel("$x_2^B$")
+        ax_B = temp.twiny()
+        ax_B.set_xlabel("$x_1^B$")
+        ax_B.invert_xaxis()
+        ax_B.invert_yaxis()
+
+        # b. scatter plot for equilibrium allocations
+        ax_A.scatter(x1A_Q3, x2A_Q3,marker='x',color='red',label='Question 3: Walras equilibrium')
+        ax_A.scatter(self.sol.x1A_opt_disc, self.sol.x2A_opt_disc,marker='x',label='Question 4a: Agent A discrete choice')
+        ax_A.scatter(self.sol.x1A_opt_cont, self.sol.x2A_opt_cont,marker='^',label='Question 4a: Agent A continuous choice')
+        ax_A.scatter(x1A_c, x2A_c,marker='o',color='blue',label='Question 5a: Agent A market marker')
+        ax_A.scatter(x1A_Q5B, x2A_Q5B,marker='o',color='orange',label='Question 5B: Agent A market marker')
+        ax_A.scatter(x1A_sp, x2A_sp,marker='D',color='green',label='Question 6: Social planner')
+        ax_A.scatter(par.w1A,par.w2A,marker='s',color='black',label='Endowment')
+
+        # c. limits
+        ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
+        ax_A.plot([0,w1bar],[w2bar,w2bar],lw=2,color='black')
+        ax_A.plot([0,0],[0,w2bar],lw=2,color='black')
+        ax_A.plot([w1bar,w1bar],[0,w2bar],lw=2,color='black')
+
+        ax_A.set_xlim([-0.1, w1bar + 0.1])
+        ax_A.set_ylim([-0.1, w2bar + 0.1])    
+        ax_B.set_xlim([w1bar + 0.1, -0.1])
+        ax_B.set_ylim([w2bar + 0.1, -0.1])
+
+        ax_A.legend(frameon=True,loc='lower left', fontsize=10);
+
+
+    def plot_Q8(self, x1A_Q8, x2A_Q8, w1bar, w2bar, WA1, WA2):
+        # a. figure set up
+        fig = plt.figure(frameon=True,figsize=(6,6), dpi=100)
+        ax_A = fig.add_subplot(1, 1, 1)
+
+        ax_A.set_xlabel("$x_1^A$")
+        ax_A.set_ylabel("$x_2^A$")
+
+        temp = ax_A.twinx()
+        temp.set_ylabel("$x_2^B$")
+        ax_B = temp.twiny()
+        ax_B.set_xlabel("$x_1^B$")
+        ax_B.invert_xaxis()
+        ax_B.invert_yaxis()
+
+        # b. scatter plot for equilibrium allocations
+        # ax_A.scatter(x1A_eq, x2A_eq,marker='o',color='blue',label='$(x_1^A,x_1^B)$, $(x_2^A,x_2^B)$')
+        # ax_A.scatter(par.w1A,par.w2A,marker='s',color='black',label='original endowment')
+        ax_A.scatter(WA1,WA2,marker='o',color='blue',label='random endowment')
+        ax_A.scatter(x1A_Q8,x2A_Q8,marker='o',color='orange',label='Market equilibrium')
+
+
+        # ax_A.scatter(X1B_eq, X2B_eq,marker='o',color='red',label='$x_1^B$, $x_2^B$')
+
+        # c. limits
+        ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
+        ax_A.plot([0,w1bar],[w2bar,w2bar],lw=2,color='black')
+        ax_A.plot([0,0],[0,w2bar],lw=2,color='black')
+        ax_A.plot([w1bar,w1bar],[0,w2bar],lw=2,color='black')
+
+        ax_A.set_xlim([-0.1, w1bar + 0.1])
+        ax_A.set_ylim([-0.1, w2bar + 0.1])    
+        ax_B.set_xlim([w1bar + 0.1, -0.1])
+        ax_B.set_ylim([w2bar + 0.1, -0.1])
+
+        ax_A.legend(frameon=True,loc='lower right', fontsize=10);
