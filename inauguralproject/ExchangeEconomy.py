@@ -258,13 +258,13 @@ class ExchangeEconomyClass:
         ax_B.invert_yaxis()
 
         # b. scatter plot for equilibrium allocations
-        ax_A.scatter(x1A_Q3, x2A_Q3,marker='x',color='red',label='Question 3: Walras equilibrium')
-        ax_A.scatter(self.sol.x1A_opt_disc, self.sol.x2A_opt_disc,marker='x',label='Question 4a: Agent A discrete choice')
-        ax_A.scatter(self.sol.x1A_opt_cont, self.sol.x2A_opt_cont,marker='^',label='Question 4a: Agent A continuous choice')
-        ax_A.scatter(x1A_c, x2A_c,marker='o',color='blue',label='Question 5a: Agent A market marker')
-        ax_A.scatter(x1A_Q5B, x2A_Q5B,marker='o',color='orange',label='Question 5B: Agent A market marker')
-        ax_A.scatter(x1A_sp, x2A_sp,marker='D',color='green',label='Question 6: Social planner')
-        ax_A.scatter(par.w1A,par.w2A,marker='s',color='black',label='Endowment')
+        ax_A.scatter(x1A_Q3, x2A_Q3,marker='x',color='red',label=f'Question 3: Walras equilibrium, $U^A = {self.utility_A(x1A_Q3,x2A_Q3):.4f}$, $U^B = {self.utility_B(1-x1A_Q3,1-x2A_Q3):.4f}$')
+        ax_A.scatter(self.sol.x1A_opt_disc, self.sol.x2A_opt_disc,marker='x',label=f'Question 4a: Agent A discrete price, $U^A = {self.utility_A(self.sol.x1A_opt_disc,self.sol.x2A_opt_disc):.4f}$, $U^B = {self.utility_B(1-self.sol.x1A_opt_disc,1-self.sol.x2A_opt_disc):.4f}$')
+        ax_A.scatter(self.sol.x1A_opt_cont, self.sol.x2A_opt_cont,marker='^',label=f'Question 4a: Agent A continuous price, $U^A = {self.utility_A(self.sol.x1A_opt_cont,self.sol.x2A_opt_cont):.4f}$, $U^B = {self.utility_B(1-self.sol.x1A_opt_cont,1-self.sol.x2A_opt_cont):.4f}$')
+        ax_A.scatter(x1A_c, x2A_c,marker='o',color='blue',label=f'Question 5a: Agent A market marker, $U^A = {self.utility_A(x1A_c,x2A_c):.4f}$, $U^B = {self.utility_B(1-x1A_c,1-x2A_c):.4f}$')
+        ax_A.scatter(x1A_Q5B, x2A_Q5B,marker='o',color='orange',label=f'Question 5B: Agent A market marker, $U^A = {self.utility_A(x1A_Q5B,x2A_Q5B):.4f}$, $U^B = {self.utility_B(1-x1A_Q5B,1-x2A_Q5B):.4f}$')
+        ax_A.scatter(x1A_sp, x2A_sp,marker='D',color='green',label=f'Question 6: Social planner, $U^A = {self.utility_A(x1A_sp,x2A_sp):.4f}$, $U^B = {self.utility_B(1-x1A_sp,1-x2A_sp):.4f}$')
+        ax_A.scatter(par.w1A,par.w2A,marker='s',color='black',label=f'Endowment, $U^A = {self.utility_A(par.w1A,par.w2A):.4f}$, $U^B = {self.utility_B(1-par.w1A,1-par.w2A):.4f}$')
 
         # c. limits
         ax_A.plot([0,w1bar],[0,0],lw=2,color='black')
@@ -277,7 +277,8 @@ class ExchangeEconomyClass:
         ax_B.set_xlim([w1bar + 0.1, -0.1])
         ax_B.set_ylim([w2bar + 0.1, -0.1])
 
-        ax_A.legend(frameon=True,loc='lower left', fontsize=10);
+        ax_A.legend(frameon=True,loc='lower left', fontsize=10, bbox_to_anchor=(1.2, 0.65));
+        ax_A.set_title("Question 6B: Allocations")
 
 
     def plot_Q8(self, x1A_Q8, x2A_Q8, w1bar, w2bar, WA1, WA2):
