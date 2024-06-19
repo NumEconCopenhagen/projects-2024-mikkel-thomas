@@ -9,22 +9,6 @@ from joypy import joyplot
 from matplotlib import cm
 import altair as alt
 
-def keep_regs(df, regs):
-    """ Example function. Keep only the subset regs of regions in data.
-
-    Args:
-        df (pd.DataFrame): pandas dataframe 
-
-    Returns:
-        df (pd.DataFrame): pandas dataframe
-
-    """ 
-    
-    for r in regs:
-        I = df.reg.str.contains(r)
-        df = df.loc[I == False] # keep everything else
-    
-    return df
 
 class gpr_clean():
     """
@@ -164,6 +148,16 @@ class idealpoint_clean():
         return self.long_df_q
     
 def heatmap_gpr(df_gpr):
+    """
+    Function to create a heatmap of the Geopolitical Risk Index (GPR) data from 1990 to the present
+
+    Args:
+        df_gpr (pd.DataFrame): DataFrame with the GPR data
+
+    Returns:
+        None (displays the heatmap)
+    """
+
     df_heatmap = df_gpr.pivot_table(index='Country_name', columns='Date', values='GPRH')
 
     # Selecting data from 1990 to the present
@@ -176,6 +170,7 @@ def heatmap_gpr(df_gpr):
     vmin = np.percentile(data_flat, 2)
     vmax = np.percentile(data_flat, 98)
 
+    # Create the heatmap
     plt.figure(figsize=(14, 10))
     heatmap = sns.heatmap(df_heatmap, cmap='coolwarm', vmin=vmin, vmax=vmax)
 
