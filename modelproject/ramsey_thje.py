@@ -43,7 +43,7 @@ class RamseyModelClass():
         par.delta = 0.05 # depreciation rate
 
         par.alphaK = 0.30 # capital weight
-        par.alphaG = 0.30 # government capital weight
+        par.alphaG = 0.10 # government capital weight
 
         # c. initial
         par.K_lag_ini = 1.0
