@@ -230,6 +230,17 @@ def lineplot_idealpoints(df_idealpoint):
     plt.show()
 
 def scatter_mil_ideal(df_military_gdp_spend, df_population, df_idealpoint):
+    """
+    Function to create a scatter plot of military spending vs ideal point and add labels for specific points
+
+    Args:
+        df_military_gdp_spend (pd.DataFrame): DataFrame with military spending data
+        df_population (pd.DataFrame): DataFrame with population data
+        df_idealpoint (pd.DataFrame): DataFrame with ideal point data
+
+    Returns:
+        None (displays the scatter plot)
+    """
     df_military_gdp_spend = df_military_gdp_spend[['2022']]
     df_military_gdp_spend.reset_index(inplace=True)
     df_military_gdp_spend = df_military_gdp_spend.rename(columns={'Country Code': 'iso3c', '2022': 'Military_GDP_Spend'})
@@ -342,6 +353,15 @@ def ridge_gpr(df_gpr):
     plt.show()
 
 def lineplot_war_deaths(df_war_deaths):
+    """"
+    Function to create a plot of global deaths from state-based wars
+
+    Args:
+        df_war_deaths (pd.DataFrame): DataFrame with the war deaths data
+
+    Returns:
+        None (displays the plot)
+    """
     df_war_deaths = df_war_deaths[df_war_deaths['Entity'] == 'World']
 
     df_war_deaths = df_war_deaths.drop(columns=['Code', 'Entity'])

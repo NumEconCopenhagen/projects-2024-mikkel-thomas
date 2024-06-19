@@ -86,7 +86,7 @@ def shock_1(update_par = False, parnames=None, parvals=None):
 
 def shock_2(update_par = False, parnames=None, parvals=None):
     """ 
-        simulate a shock to productivity
+        simulate a transitory anticipated shock to tax rate on housing
 
         Args:
             update_par (bool): if True, update parameters

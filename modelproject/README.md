@@ -1,6 +1,6 @@
 # Model analysis project
 
-Our project is titled **Ramsey model with housing and a government sector** and is about implementing hosing consumption into an otherwise standard Ramsey model. We also implement a government sector that taxes housing. We have so far only managed to implement the housing consumption into the utility function and simulate the effect of an increase in taxes in housing prices.
+Our project is titled **Ramsey model with housing and a government sector** and is about implementing hosing consumption into an otherwise standard Ramsey model. We also implement a government sector that taxes housing. We then also allow for government capital to be productive i.e. we include government capital into the production function. This government capital is financed by a tax on housing.
 
 The **results** of the project can be seen from running [modelproject.ipynb](modelproject.ipynb).
 
