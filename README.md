@@ -1,7 +1,7 @@
 # Mikkel & Thomas
 
 **Group members:**
-- Mikkel Lyngholm ()
+- Mikkel Lyngholm (tzn327)
 - Thomas Jensen (rgt573)
 
 This repository contains  
