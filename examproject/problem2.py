@@ -259,6 +259,7 @@ def plot_p3(par):
     ax.legend()
     ax.set_xlabel('Graduate Types', fontsize=14)
     ax.set_ylabel('Average utility', fontsize=14)
+    ax.set_title('Utilities', fontsize=16)
 
     ax3 = fig.add_subplot(1,2,2)
 
