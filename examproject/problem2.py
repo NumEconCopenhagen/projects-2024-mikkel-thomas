@@ -9,6 +9,9 @@ plt.rcParams.update({'font.size': 14})
 # Write your answer here 
 
 def carrer_choice(par):
+    """
+    Calculate the career choice for each graduate type based on the utility of each career track. This is essentially the inner loop of the function
+    """
     u_ij_prior = np.nan + np.zeros((par.N))
     u_ij_real = np.nan + np.zeros((par.N))
     u_ijF = np.nan + np.zeros((par.J))
@@ -23,7 +26,7 @@ def carrer_choice(par):
         j_star[i] = np.argmax(u_ijF)
         j_star_temp  = np.argmax(u_ijF)
         u_ij_prior[i] = u_ijF[j_star_temp] # Prior expectation of the utility
-        u_ij_real[i] = u_ijF[j_star_temp] + eps_ij[j_star_temp] # Realization of the utility
+        u_ij_real[i] = par.v[j_star_temp] + eps_ij[j_star_temp] # Realization of the utility
     return u_ij_prior, u_ij_real, j_star
 
 def carrer_choice_outer(par):
@@ -33,7 +36,7 @@ def carrer_choice_outer(par):
     Args:
     - par: A SimpleNamespace containing the parameters of the simulation.
     """
-    np.random.seed(2024)
+    np.random.seed(2024) # Set seed for reproducibility. Placed here to get rid of state depence in the random number generator
     u_ij_prior_avg = np.zeros((par.N,par.K))
     u_ij_real_avg = np.zeros((par.N,par.K))
     j_star_avg = np.zeros((par.N,par.K))
@@ -47,7 +50,16 @@ def carrer_choice_outer(par):
     return u_ij_prior_avg, u_ij_real_avg, j_star_avg
 
 def sum_stats(par):
-
+    """"
+    This function calculates the share of graduates choosing each career track and the conditional expected utilities for each career track.
+    
+    Args:
+    - par: A SimpleNamespace containing the parameters of the simulation.
+    
+    Returns:
+    - shares: A N x J array containing the share of graduates choosing each career track.
+    - conditional_u_ij_real_avg: A N x J array containing the conditional expected utilities for each career track based on the realized utility.
+    - conditional_u_ij_prior_avg: A N x J array containing the conditional expected utilities for each career track based on the prior utility."""
     u_ij_prior_avg, u_ij_real_avg, j_star_avg = carrer_choice_outer(par)
 
     shares = np.zeros((par.N,par.J))
@@ -154,6 +166,7 @@ def plot_p2(par):
 
 
 def carrer_choice_y2(par):
+    # Initialize arrays to store the results
     u_ij_prior = np.nan + np.zeros((par.N))
     u_ij_prior_switch = np.nan + np.zeros((par.N))
     u_ij_real = np.nan + np.zeros((par.N))
@@ -177,10 +190,10 @@ def carrer_choice_y2(par):
 
         # Update the expected utility for each career path when the switching cost is applied
         for j, jv in enumerate(par.v):
-            if j == j_star_temp:
-                u_ijF_swtich[j] = par.v[j] - par.c
-            else:
-                u_ijF_swtich[j] = u_ijF[j]
+            if j == j_star_temp: # If you stay in the same career path, you know know the utility
+                u_ijF_swtich[j] = par.v[j]
+            else: # If you switch, you have to pay the switching cost
+                u_ijF_swtich[j] = u_ijF[j] - par.c
 
         # Find the career path that maximizes the expected utility
         j_star_switch[i] = np.argmax(u_ijF_swtich)
