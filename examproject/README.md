@@ -1,0 +1,1 @@
+In this folder, we solve the exam questions. The answers is structured such that the answers are in the file exam_2024.ipynb, while most of the code needed to solve the questions can be found in individual .py files.
