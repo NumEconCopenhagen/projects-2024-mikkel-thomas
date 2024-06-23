@@ -103,13 +103,11 @@ def errors(p, par):
     return demand_errors
 
 def swf(par, p1, p2):
+    """ Social welfare function"""
     sol_case1 = optimize.minimize_scalar(objective, method='bounded', bounds=(1e-8,10*10^6), args=(par,p1,p2))
     ell = sol_case1.x
     U = (np.log(c1_star(par,p1, p2,ell)**par.alpha*c2_star(par,p1, p2,ell)**(1-par.alpha)) - par.nu * ell**(1+par.epsilon)/(1+par.epsilon))
     y2 = y_star(par,p2)
-    # print(f'y_2 = {y2}')
-    # print(f'U = {U}')
-    # print(par.T)
     return U - par.kappa*y_star(par, p2)
 
 def find_optimal_tau(par):
